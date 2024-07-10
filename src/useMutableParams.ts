@@ -16,38 +16,40 @@ import {
   getMergedOptions,
   defaultSerializer,
   defaultDeserializer,
-  objectFromSearchParamsEntries,
+  stateFromEntries
 } from './lib'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Target } from './Target'
 
 export function useMutableParams<T extends SchemaValidator<T>>(
-  useMutableParamsOptions: UseMutableParamsOptions<Required<T>> = {}
+  useMutableParamsOptions?: UseMutableParamsOptions<Required<T>>
 ): [Partial<T>, MutableParams<T>] {
   type Schema = Required<T>
   type Keys = ExtractKeys<Schema>
 
   const serializer: Serializer<Schema> = useMemo(
-    () => useMutableParamsOptions.serializer ?? defaultSerializer,
-    [useMutableParamsOptions.serializer]
+    () => useMutableParamsOptions?.serializer ?? defaultSerializer,
+    [useMutableParamsOptions?.serializer]
   )
 
   const deserializer: Deserializer<Schema> = useMemo(
-    () => useMutableParamsOptions.deserializer ?? defaultDeserializer,
-    [useMutableParamsOptions.deserializer]
+    () => useMutableParamsOptions?.deserializer ?? defaultDeserializer,
+    [useMutableParamsOptions?.deserializer]
   )
 
-  const [mutableParamsState, setMutableParamsState] = useState<Partial<T>>(
-    objectFromSearchParamsEntries(getCurrentParams().entries(), deserializer)
-  )
+  const [state, setState] = useState<Partial<T>>({})
+
+  useEffect(() => {
+    setState(stateFromEntries(getCurrentParams().entries(), deserializer))
+  }, [deserializer])
 
   useEffect(() => {
     const listener: OnTriggerListener = (newState) => {
-      setMutableParamsState(newState)
+      setState(newState)
     }
 
-    if (useMutableParamsOptions.syncState === true) {
+    if (useMutableParamsOptions?.syncState === true) {
       Target.instance.addTriggerListener(listener)
 
       return () => {
@@ -57,10 +59,10 @@ export function useMutableParams<T extends SchemaValidator<T>>(
       // in case syncState changed
       Target.instance.removeTriggerListener(listener)
     }
-  }, [useMutableParamsOptions.syncState])
+  }, [useMutableParamsOptions?.syncState])
 
   const modifyParams: ModifyParams<Schema> = useCallback(
-    ({ action, key, value }, modifyParamsOptions = {}) => {
+    ({ action, key, value }, modifyParamsOptions) => {
       const current = getCurrentParams()
 
       const { serializeArrays, syncState, replace } = getMergedOptions({
@@ -102,10 +104,7 @@ export function useMutableParams<T extends SchemaValidator<T>>(
 
       const params = current.toString()
       const newUrl = `${window.location.pathname}${params ? `?${params}` : ''}`
-      const newState = objectFromSearchParamsEntries(
-        current.entries(),
-        deserializer
-      )
+      const newState = stateFromEntries(current.entries(), deserializer)
 
       if (replace) {
         window.history.replaceState(null, '', newUrl)
@@ -116,11 +115,11 @@ export function useMutableParams<T extends SchemaValidator<T>>(
       if (syncState) {
         Target.instance.trigger({ newState })
       } else {
-        setMutableParamsState(newState)
+        setState(newState)
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [useMutableParamsOptions]
+
+    [deserializer, serializer, useMutableParamsOptions]
   )
 
   const mutableParams: MutableParams<Schema> = useMemo(
@@ -184,5 +183,5 @@ export function useMutableParams<T extends SchemaValidator<T>>(
     [deserializer, modifyParams]
   )
 
-  return [mutableParamsState, mutableParams]
+  return [state, mutableParams]
 }

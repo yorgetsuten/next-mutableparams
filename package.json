@@ -10,8 +10,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "clean": "rimraf dist",
+    "build": "rimraf dist && tsc && vite build",
     "lint:types": "tsc --noEmit",
     "lint:eslint": "eslint .",
     "lint:prettier": "prettier . --check",

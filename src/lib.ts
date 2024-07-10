@@ -34,8 +34,8 @@ export function getMergedOptions({
   modifyParamsOptions,
   defaultOptions
 }: {
-  useMutableParamsOptions: UseMutableParamsOptions<any>
-  modifyParamsOptions: ParamsModificationOptions & ParamsProcessingOptions
+  useMutableParamsOptions?: UseMutableParamsOptions<any>
+  modifyParamsOptions?: ParamsModificationOptions & ParamsProcessingOptions
   defaultOptions: ParamsModificationOptions & ParamsProcessingOptions
 }) {
   let key: keyof (ParamsModificationOptions & ParamsProcessingOptions)
@@ -43,15 +43,15 @@ export function getMergedOptions({
 
   for (key in defaultOptions) {
     options[key] =
-      modifyParamsOptions[key] ??
-      useMutableParamsOptions[key] ??
+      (modifyParamsOptions ?? {})[key] ??
+      (useMutableParamsOptions ?? {})[key] ??
       defaultOptions[key]
   }
 
   return options
 }
 
-export function objectFromSearchParamsEntries<T extends SchemaValidator<T>>(
+export function stateFromEntries<T extends SchemaValidator<T>>(
   entries: IterableIterator<[string, string]>,
   deserializer: Deserializer<T>
 ) {
