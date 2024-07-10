@@ -2,9 +2,8 @@ import type {
   Serializer,
   Deserializer,
   SchemaValidator,
-  ParamsModificationOptions,
   ParamsProcessingOptions,
-  UseMutableParamsOptions
+  ParamsModificationOptions
 } from './types'
 
 export const defaultSerializer: Serializer<any> = (value) => {
@@ -30,22 +29,20 @@ export function getCurrentParams() {
 }
 
 export function getMergedOptions({
-  useMutableParamsOptions,
-  modifyParamsOptions,
-  defaultOptions
+  hookOptions,
+  defaultOptions,
+  modifyParamsOptions
 }: {
-  useMutableParamsOptions?: UseMutableParamsOptions<any>
-  modifyParamsOptions?: ParamsModificationOptions & ParamsProcessingOptions
+  hookOptions: ParamsModificationOptions & ParamsProcessingOptions
   defaultOptions: ParamsModificationOptions & ParamsProcessingOptions
+  modifyParamsOptions: ParamsModificationOptions & ParamsProcessingOptions
 }) {
   let key: keyof (ParamsModificationOptions & ParamsProcessingOptions)
   const options: ParamsModificationOptions & ParamsProcessingOptions = {}
 
   for (key in defaultOptions) {
     options[key] =
-      (modifyParamsOptions ?? {})[key] ??
-      (useMutableParamsOptions ?? {})[key] ??
-      defaultOptions[key]
+      modifyParamsOptions[key] ?? hookOptions[key] ?? defaultOptions[key]
   }
 
   return options

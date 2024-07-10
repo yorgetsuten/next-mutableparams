@@ -23,33 +23,31 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Target } from './Target'
 
 export function useMutableParams<T extends SchemaValidator<T>>(
-  useMutableParamsOptions?: UseMutableParamsOptions<Required<T>>
+  hookOptions: UseMutableParamsOptions<Required<T>> = {}
 ): [Partial<T>, MutableParams<T>] {
   type Schema = Required<T>
   type Keys = ExtractKeys<Schema>
 
   const serializer: Serializer<Schema> = useMemo(
-    () => useMutableParamsOptions?.serializer ?? defaultSerializer,
-    [useMutableParamsOptions?.serializer]
+    () => hookOptions.serializer ?? defaultSerializer,
+    [hookOptions.serializer]
   )
 
   const deserializer: Deserializer<Schema> = useMemo(
-    () => useMutableParamsOptions?.deserializer ?? defaultDeserializer,
-    [useMutableParamsOptions?.deserializer]
+    () => hookOptions.deserializer ?? defaultDeserializer,
+    [hookOptions.deserializer]
   )
 
-  const [state, setState] = useState<Partial<T>>({})
-
-  useEffect(() => {
-    setState(stateFromEntries(getCurrentParams().entries(), deserializer))
-  }, [deserializer])
+  const [state, setState] = useState<Partial<T>>(
+    stateFromEntries(getCurrentParams().entries(), deserializer)
+  )
 
   useEffect(() => {
     const listener: OnTriggerListener = (newState) => {
       setState(newState)
     }
 
-    if (useMutableParamsOptions?.syncState === true) {
+    if (hookOptions.syncState === true) {
       Target.instance.addTriggerListener(listener)
 
       return () => {
@@ -59,20 +57,24 @@ export function useMutableParams<T extends SchemaValidator<T>>(
       // in case syncState changed
       Target.instance.removeTriggerListener(listener)
     }
-  }, [useMutableParamsOptions?.syncState])
+  }, [hookOptions.syncState])
 
   const modifyParams: ModifyParams<Schema> = useCallback(
-    ({ action, key, value }, modifyParamsOptions) => {
+    ({ action, key, value }, modifyParamsOptions = {}) => {
       const current = getCurrentParams()
 
       const { serializeArrays, syncState, replace } = getMergedOptions({
-        useMutableParamsOptions,
-        modifyParamsOptions,
+        hookOptions: {
+          replace: hookOptions.replace,
+          syncState: hookOptions.syncState,
+          serializeArrays: hookOptions.serializeArrays
+        },
         defaultOptions: {
           serializeArrays: true,
           syncState: false,
           replace: false
-        }
+        },
+        modifyParamsOptions
       })
 
       const handleSetAction = <K extends Keys>(key: K, value: Schema[K]) => {
@@ -112,14 +114,18 @@ export function useMutableParams<T extends SchemaValidator<T>>(
         window.history.pushState(null, '', newUrl)
       }
 
-      if (syncState) {
-        Target.instance.trigger({ newState })
-      } else {
-        setState(newState)
-      }
+      if (syncState) Target.instance.trigger({ newState })
+
+      setState(newState)
     },
 
-    [deserializer, serializer, useMutableParamsOptions]
+    [
+      serializer,
+      deserializer,
+      hookOptions.replace,
+      hookOptions.syncState,
+      hookOptions.serializeArrays
+    ]
   )
 
   const mutableParams: MutableParams<Schema> = useMemo(
