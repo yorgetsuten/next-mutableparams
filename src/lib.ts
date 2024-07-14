@@ -6,11 +6,12 @@ import type {
   ParamsModificationOptions
 } from './types'
 
-export const defaultSerializer: Serializer<any> = (value) => {
+export const serializer: Serializer<any> = (value) => {
   return typeof value === 'string' ? value : JSON.stringify(value)
 }
 
-export const defaultDeserializer: Deserializer<any> = (value) => {
+export const deserializer: Deserializer<any> = (value) => {
+  if (value === undefined) return null
   if (value === 'undefined') return undefined
 
   try {

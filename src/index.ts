@@ -1,7 +1,8 @@
 export type {
   Serializer,
   Deserializer,
+  SerializeSchema,
   UseMutableParamsOptions
 } from './types'
 
-export { useMutableParams } from './useMutableParams'
+export { serializer, deserializer } from './lib'
