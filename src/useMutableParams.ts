@@ -11,30 +11,26 @@ import type {
   UseMutableParamsOptions
 } from './types'
 
-import {
-  getCurrentParams,
-  getMergedOptions,
-  defaultSerializer,
-  defaultDeserializer,
-  stateFromEntries
-} from './lib'
-
+import { getCurrentParams, getMergedOptions, stateFromEntries } from './lib'
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { serializer, deserializer } from './index'
 import { Target } from './Target'
 
+export type { UseMutableParamsOptions }
+
 export function useMutableParams<T extends SchemaValidator<T>>(
-  hookOptions: UseMutableParamsOptions<Required<T>> = {}
+  hookOptions: UseMutableParamsOptions<T> = {}
 ): [Partial<T>, MutableParams<T>] {
   type Schema = Required<T>
   type Keys = ExtractKeys<Schema>
 
-  const serializer: Serializer<Schema> = useMemo(
-    () => hookOptions.serializer ?? defaultSerializer,
+  const serialize: Serializer<Schema> = useMemo(
+    () => hookOptions.serializer ?? serializer,
     [hookOptions.serializer]
   )
 
-  const deserializer: Deserializer<Schema> = useMemo(
-    () => hookOptions.deserializer ?? defaultDeserializer,
+  const deserialize: Deserializer<Schema> = useMemo(
+    () => hookOptions.deserializer ?? deserializer,
     [hookOptions.deserializer]
   )
 
@@ -81,20 +77,20 @@ export function useMutableParams<T extends SchemaValidator<T>>(
         if (!serializeArrays && Array.isArray(value)) {
           current.delete(key)
           ;(value as (typeof value)[]).forEach((value) =>
-            current.append(key, serializer(value))
+            current.append(key, serialize(value))
           )
         } else {
-          current.set(key, serializer(value))
+          current.set(key, serialize(value))
         }
       }
 
       const handeDeleteAction = <K extends Keys>(key: K, value?: Schema[K]) => {
         if (current.getAll(key).length > 1 && Array.isArray(value)) {
           ;(value as (typeof value)[]).forEach((value) =>
-            current.delete(key, serializer(value))
+            current.delete(key, serialize(value))
           )
         } else {
-          current.delete(key, value && serializer(value))
+          current.delete(key, value && serialize(value))
         }
       }
 
@@ -106,7 +102,7 @@ export function useMutableParams<T extends SchemaValidator<T>>(
 
       const params = current.toString()
       const newUrl = `${window.location.pathname}${params ? `?${params}` : ''}`
-      const newState = stateFromEntries(current.entries(), deserializer)
+      const newState = stateFromEntries(current.entries(), deserialize)
 
       if (replace) {
         window.history.replaceState(null, '', newUrl)
@@ -120,8 +116,8 @@ export function useMutableParams<T extends SchemaValidator<T>>(
     },
 
     [
-      serializer,
-      deserializer,
+      serialize,
+      deserialize,
       hookOptions.replace,
       hookOptions.syncState,
       hookOptions.serializeArrays
@@ -136,9 +132,9 @@ export function useMutableParams<T extends SchemaValidator<T>>(
         if (values.length === 0) {
           return null
         } else if (values.length === 1) {
-          return deserializer<K>(values[0])
+          return deserialize<K>(values[0])
         } else {
-          return values.map((value) => deserializer<K>(value)) as Schema[K]
+          return values.map((value) => deserialize<K>(value)) as Schema[K]
         }
       },
 
@@ -152,7 +148,7 @@ export function useMutableParams<T extends SchemaValidator<T>>(
 
       *entries<K extends Keys>(): IterableIterator<Entrie<Schema, K>> {
         for (const [key, value] of getCurrentParams().entries()) {
-          yield [key, deserializer(value)] as Entrie<Schema, K>
+          yield [key, deserialize(value)] as Entrie<Schema, K>
         }
       },
 
@@ -164,15 +160,13 @@ export function useMutableParams<T extends SchemaValidator<T>>(
 
       *values() {
         for (const value of getCurrentParams().values()) {
-          yield deserializer(value)
+          yield deserialize(value)
         }
       },
 
       forEach<K extends Keys>(fn: ForEachFn<Schema, K>) {
         getCurrentParams().forEach((value, key) => {
-          fn(
-            ...([deserializer(value), key] as Parameters<ForEachFn<Schema, K>>)
-          )
+          fn(...([deserialize(value), key] as Parameters<ForEachFn<Schema, K>>))
         })
       },
 
@@ -186,7 +180,7 @@ export function useMutableParams<T extends SchemaValidator<T>>(
 
       has: (key) => getCurrentParams().has(key)
     }),
-    [deserializer, modifyParams]
+    [deserialize, modifyParams]
   )
 
   return [state, mutableParams]

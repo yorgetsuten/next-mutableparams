@@ -2,18 +2,18 @@ export type SchemaValidator<T> = object & {
   [K in keyof T]: K extends string ? T[K] : never
 }
 
+export type SerializeSchema<T extends SchemaValidator<T>> = {
+  [P in keyof T]: string
+}
+
 export type ExtractKeys<T extends SchemaValidator<T>> = Extract<keyof T, string>
 
-export type Serializer<T extends SchemaValidator<T>> = <
-  K extends ExtractKeys<T>
->(
+export type Serializer<T extends SchemaValidator<T>> = <K extends keyof T>(
   value: T[K]
-) => string
+) => SerializeSchema<T>[K]
 
-export type Deserializer<T extends SchemaValidator<T>> = <
-  K extends ExtractKeys<T>
->(
-  value: string
+export type Deserializer<T extends SchemaValidator<T>> = <K extends keyof SerializeSchema<T>>(
+  value: SerializeSchema<T>[K]
 ) => T[K]
 
 export type OnTriggerListener = (newState: object) => void
