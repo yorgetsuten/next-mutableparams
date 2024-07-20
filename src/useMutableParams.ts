@@ -12,6 +12,7 @@ import type {
 } from './types'
 
 import { getCurrentParams, getMergedOptions, stateFromEntries } from './lib'
+import { useSearchParams as useReadOnlyParams } from 'next/navigation'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { serializer, deserializer } from './index'
 import { Target } from './Target'
@@ -34,8 +35,10 @@ export function useMutableParams<T extends SchemaValidator<T>>(
     [hookOptions.deserializer]
   )
 
+  const readOnlyParams = useReadOnlyParams()
+
   const [state, setState] = useState<Partial<T>>(
-    stateFromEntries(getCurrentParams().entries(), deserializer)
+    stateFromEntries(readOnlyParams.entries(), deserializer)
   )
 
   useEffect(() => {

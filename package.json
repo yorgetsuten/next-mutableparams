@@ -1,6 +1,6 @@
 {
   "name": "next-mutableparams",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
   "types": "dist/index.d.ts",
   "files": [
@@ -25,6 +25,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "next": "^14.2.5",
     "react": "^18.2.0"
   },
   "devDependencies": {
