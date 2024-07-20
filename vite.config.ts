@@ -2,7 +2,6 @@ import { resolve } from 'path'
 import { defineConfig } from 'vitest/config'
 import dts from 'vite-plugin-dts'
 import react from '@vitejs/plugin-react'
-import packagejson from './package.json' assert { type: 'json' }
 
 export default defineConfig({
   plugins: [react(), dts({ rollupTypes: true })],
@@ -15,7 +14,7 @@ export default defineConfig({
       }
     },
     rollupOptions: {
-      external: [...Object.keys(packagejson.dependencies), /^node:.*/]
+      external: ['next/navigation', 'react']
     },
     target: 'esnext'
   },
