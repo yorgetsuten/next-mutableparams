@@ -12,7 +12,7 @@ yarn add next-mutableparams
 ``` ts
 'use client'
 
-import { useMutableParams } from 'next-mutableparams'
+import { useMutableParams } from 'next-mutableparams/use'
 
 type Schema = Partial<{
   q: string
