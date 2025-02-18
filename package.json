@@ -1,6 +1,6 @@
 {
   "name": "next-mutableparams",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "",
   "types": "dist/index.d.ts",
   "files": [
@@ -16,33 +16,31 @@
     }
   },
   "scripts": {
-    "build": "tsc && vite build",
-    "lint:types": "tsc --noEmit",
-    "lint:eslint": "eslint .",
-    "lint:prettier": "prettier . --check",
-    "lint": "pnpm run /^lint:/",
-    "format": "prettier . --write",
-    "test": "vitest"
+    "build": "pnpm format && pnpm test && vite build",
+    "test:lint": "eslint .",
+    "test:types": "tsc -b",
+    "format:eslint": "eslint --fix",
+    "format:prettier": "prettier --write",
+    "test": "pnpm /^test:/",
+    "format": "pnpm /^format:/ -- ."
   },
   "dependencies": {
-    "next": "^14.2.5",
-    "react": "^18.2.0"
+    "next": "^14.2.24",
+    "react": "^18.3.1"
   },
   "devDependencies": {
-    "@testing-library/react": "^16.0.0",
-    "@types/node": "^20.14.10",
-    "@types/react": "^18.3.3",
-    "@vitejs/plugin-react": "^4.3.1",
-    "eslint": "~8.57.0",
-    "eslint-config-prettier": "^9.1.0",
+    "@testing-library/react": "^16.2.0",
+    "@types/node": "^20.17.19",
+    "@types/react": "^18.3.18",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "~8.57.1",
+    "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-react-hooks": "^4.6.2",
-    "globals": "^15.8.0",
-    "jsdom": "^24.1.0",
-    "prettier": "^3.2.5",
-    "typescript": "^5.2.2",
-    "typescript-eslint": "^7.15.0",
-    "vite": "^5.3.3",
-    "vite-plugin-dts": "^3.9.1",
-    "vitest": "^1.6.0"
+    "globals": "^15.15.0",
+    "prettier": "^3.5.1",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^7.18.0",
+    "vite": "^5.4.14",
+    "vite-plugin-dts": "^3.9.1"
   }
 }

@@ -12,7 +12,9 @@ export type Serializer<T extends SchemaValidator<T>> = <K extends keyof T>(
   value: T[K]
 ) => SerializeSchema<T>[K]
 
-export type Deserializer<T extends SchemaValidator<T>> = <K extends keyof SerializeSchema<T>>(
+export type Deserializer<T extends SchemaValidator<T>> = <
+  K extends keyof SerializeSchema<T>
+>(
   value: SerializeSchema<T>[K]
 ) => T[K]
 
@@ -29,6 +31,9 @@ export type ParamsProcessingOptions = Partial<{
   serializeArrays: boolean
 }>
 
+export type ModifyParamsOptions = ParamsModificationOptions &
+  ParamsProcessingOptions
+
 export type UseMutableParamsOptions<T extends SchemaValidator<T>> =
   ParamsModificationOptions &
     ParamsProcessingOptions &
@@ -37,7 +42,7 @@ export type UseMutableParamsOptions<T extends SchemaValidator<T>> =
       deserializer: Deserializer<T>
     }>
 
-type ParamsModificationData<
+export type ParamsModificationData<
   T extends SchemaValidator<T>,
   K extends ExtractKeys<T>
 > =
@@ -52,55 +57,12 @@ type ParamsModificationData<
       value?: T[K]
     }
 
-export type ModifyParams<T extends SchemaValidator<T>> = <
-  K extends ExtractKeys<T>
->(
-  data: ParamsModificationData<T, K>,
-  options?: ParamsModificationOptions & ParamsProcessingOptions
-) => void
-
 export type Entrie<
-  T extends SchemaValidator<T>,
-  K extends ExtractKeys<T>
-> = T extends T ? [K, T[K]] : never
+  K extends ExtractKeys<T>,
+  T extends SchemaValidator<T>
+> = K extends K ? [K, T[K]] : never
 
 export type ForEachFn<
-  T extends SchemaValidator<T>,
-  K extends ExtractKeys<T>
-> = (...[value, key]: T extends T ? [T[K], K] : never) => void
-
-export type MutableParams<T extends SchemaValidator<T>> = {
-  get<K extends ExtractKeys<Required<T>>>(key: K): Required<T>[K] | null
-
-  set<K extends ExtractKeys<Required<T>>>(
-    key: K,
-    value: Required<T>[K],
-    options?: ParamsModificationOptions & ParamsProcessingOptions
-  ): void
-
-  delete<K extends ExtractKeys<Required<T>>>(
-    key: K,
-    value?: Required<T>[K],
-    options?: ParamsModificationOptions
-  ): void
-
-  entries<K extends ExtractKeys<Required<T>>>(): IterableIterator<
-    Entrie<Required<T>, K>
-  >
-
-  keys(): IterableIterator<ExtractKeys<Required<T>>>
-
-  values(): IterableIterator<Required<T>[ExtractKeys<Required<T>>]>
-
-  forEach<K extends ExtractKeys<Required<T>>>(
-    fn: ForEachFn<Required<T>, K>
-  ): void
-
-  size: number
-
-  sort(): void
-
-  toString: () => string
-
-  has: (key: ExtractKeys<Required<T>>) => boolean
-}
+  K extends ExtractKeys<T>,
+  T extends SchemaValidator<T>
+> = (...[value, key]: K extends K ? [T[K], K] : never) => void

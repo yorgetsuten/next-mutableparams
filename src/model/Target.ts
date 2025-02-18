@@ -1,4 +1,4 @@
-import type { OnTriggerListener, TriggerEventDetail } from './types'
+import type { OnTriggerListener, TriggerEventDetail } from 'src/types'
 
 export class Target extends EventTarget {
   private static Instance?: Target
@@ -36,7 +36,6 @@ export class Target extends EventTarget {
     if (index !== -1)
       this.onTriggerListeners = this.onTriggerListeners.toSpliced(index, 1)
 
-    if (this.onTriggerListeners.length === 0)
-      delete Target.Instance
+    if (this.onTriggerListeners.length === 0) delete Target.Instance
   }
 }
